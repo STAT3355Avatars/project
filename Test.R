@@ -30,9 +30,29 @@ netflix_shows <- read_csv("netflix_shows_set.csv",
 head(netflix_shows)
 
 # 2. theNumbers dataset
-the_numbers <- read_csv("theNumbers_set.csv")
-head(the_numbers)
+the_numbers <- read_csv("theNumbers_set.csv",
+                        col_types = cols(
+                          movie_name = col_factor(),
+                          production_year = col_factor(),
+                          movie_odid = col_factor(),
+                          production_budget = col_factor(),
+                          domestic_box_office = col_double(),
+                          international_box_office = col_double(),
+                          rating = col_factor(),
+                          creative_type = col_factor(),
+                          source = col_factor(),
+                          production_method = col_factor(),
+                          genre = col_factor(),
+                          sequel = col_factor(),
+                          running_time = col_factor()
+),
+                        skip_empty_rows = TRUE,
+                        na = c("", NA), # reads empty strings as NA
+                        )
 
+# check the numbers dataset:
+head(the_numbers)
+spec(the_numbers) # returns the columns and their types
 
 top_10k <- read_csv("top_10k_set.csv")
 
