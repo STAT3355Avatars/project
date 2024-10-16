@@ -28,6 +28,8 @@ netflix_shows <- read_csv("netflix_shows_set.csv",
                     )
 # check first 6 rows:
 head(netflix_shows)
+spec(netflix_shows) # returns the columns and their types
+
 
 # 2. theNumbers dataset
 the_numbers <- read_csv("theNumbers_set.csv",
@@ -54,13 +56,31 @@ the_numbers <- read_csv("theNumbers_set.csv",
 head(the_numbers)
 spec(the_numbers) # returns the columns and their types
 
-top_10k <- read_csv("top_10k_set.csv")
 
+# 2. top_10k dataset
+top_10k <- read_csv("top_10k_set.csv",
+                    col_select = c(-"...1"), # exclude first column
+                    col_types = cols(
+                      id = col_double(),
+                      original_language = col_factor(),
+                      original_title = col_factor(),
+                      popularity = col_factor(),
+                      release_date = col_date(format = "%Y-%m-%d"),
+                      vote_average = col_factor(),
+                      vote_count = col_factor(),
+                      genre = col_factor(),
+                      overview = col_character(),
+                      revenue = col_double(),
+                      runtime = col_factor(),
+                      tagline = col_factor()
+                    ),
+                    skip_empty_rows = TRUE,
+                    na = c("", NA), # reads empty strings as NA
+                  )
 
-column_netflix_shows <- colnames(netflix_shows)
-?read_csv()
-
-
+# check the top_10k dataset:
+head(top_10k)
+spec(top_10k) # returns the columns and their types
 
 
 
