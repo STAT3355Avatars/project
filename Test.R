@@ -57,7 +57,7 @@ head(the_numbers)
 spec(the_numbers) # returns the columns and their types
 
 
-# 2. top_10k dataset
+# 3. top_10k dataset
 top_10k <- read_csv("top_10k_set.csv",
                     col_select = c(-"...1"), # exclude first column
                     col_types = cols(
@@ -81,6 +81,18 @@ top_10k <- read_csv("top_10k_set.csv",
 # check the top_10k dataset:
 head(top_10k)
 spec(top_10k) # returns the columns and their types
+
+
+# The three dataset are in tibble. Feel free to convert them to dataframe as you work on it:
+netflix_shows %>% 
+  as.data.frame()
+
+the_numbers %>% 
+  as.data.frame()
+
+top_10k %>% 
+  as.data.frame()
+
 
 
 
