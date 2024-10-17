@@ -6,7 +6,9 @@ library(ggplot2)
 # --------------------------------------------------------------------------------------
 #### Observe Dataset:
 
-# 1. netflix_shows.test.csv
+
+# Read each of the 3 respective data sets
+
 netflix_shows <- read_csv("netflix_shows_set.csv",
                           col_names = TRUE,
                           col_types = cols(
@@ -27,12 +29,6 @@ netflix_shows <- read_csv("netflix_shows_set.csv",
                         skip_empty_rows = TRUE, # skips empty rows
                       na = c("", NA), # reads empty strings as NA
                     )
-# check first 6 rows:
-head(netflix_shows)
-spec(netflix_shows) # returns the columns and their types
-
-
-# 2. theNumbers dataset
 the_numbers <- read_csv("theNumbers_set.csv",
                         col_types = cols(
                           movie_name = col_factor(),
@@ -52,13 +48,6 @@ the_numbers <- read_csv("theNumbers_set.csv",
                         skip_empty_rows = TRUE,
                         na = c("", NA), # reads empty strings as NA
                         )
-
-# check the numbers dataset:
-head(the_numbers)
-spec(the_numbers) # returns the columns and their types
-
-
-# 3. top_10k dataset
 top_10k <- read_csv("top_10k_set.csv",
                     col_select = c(-"...1"), # exclude first column
                     col_types = cols(
@@ -67,7 +56,7 @@ top_10k <- read_csv("top_10k_set.csv",
                       original_title = col_factor(),
                       popularity = col_double(),
                       release_date = col_date(format = "%Y-%m-%d"),
-                      vote_average = col_factor(),
+                      vote_average = col_double(),
                       vote_count = col_factor(),
                       genre = col_factor(),
                       overview = col_character(),
@@ -78,11 +67,6 @@ top_10k <- read_csv("top_10k_set.csv",
                     skip_empty_rows = TRUE,
                     na = c("", NA), # reads empty strings as NA
                   )
-
-# check the top_10k dataset:
-head(top_10k)
-spec(top_10k) # returns the columns and their types
-
 
 # The three dataset are in tibble. Feel free to convert them to dataframe as you work on it:
 netflix_shows %>% 
@@ -95,44 +79,69 @@ top_10k %>%
   as.data.frame()
 
 
-top10k_numbers_merged <- the_numbers[tolower(the_numbers$movie_name) %in% tolower(top_10k$original_title), ]
+top_10k <- top_10k %>% select(-genre)
 top_10k <- rename(top_10k, "movie_name" = "original_title")
+netflix_shows <- rename(netflix_shows, "movie_name" = "title")
 
-head(top_10k)
+all_merged <- the_numbers[casefold(the_numbers$movie_name) %in% casefold(top_10k$movie_name) &
+                          casefold(the_numbers$movie_name) %in% casefold(netflix_shows$movie_name), ]
+
+
 
 filtered_the_numbers <- the_numbers %>% 
-  filter(movie_name %in% top_10k$movie_name)
+  filter(movie_name %in% top_10k$movie_name &
+        movie_name %in% netflix_shows$movie_name)
 
 filtered_top_10k <- top_10k %>% 
-  filter(movie_name %in% the_numbers$movie_name)
+  filter(movie_name %in% the_numbers$movie_name & 
+        movie_name %in% netflix_shows$movie_name)
+
+filtered_netflix_shows <- netflix_shows %>%
+  filter(movie_name %in% top_10k$movie_name &
+        movie_name %in% the_numbers$movie_name)
 
 top10k_numbers_merged <- inner_join(filtered_top_10k, filtered_the_numbers, by="movie_name")
-# factor(top10k_numbers_merged$movie_name) One or more movies is counted more than once
-# length(top10k_numbers_merged$movie_name)
-colnames(top10k_numbers_merged)
 
-top10k_numbers_merged <- top10k_numbers_merged %>% 
-  mutate(revenue = round(log10(domestic_box_office + international_box_office)),
-        popularity_discrete = round(log(popularity, 2))) %>% 
-  select(movie_name, production_budget, revenue, vote_average, popularity)
+all_merged <- inner_join(filtered_netflix_shows, top10k_numbers_merged)
+
+all_merged <- all_merged %>% 
+  mutate(revenue = as.factor(round(log10(domestic_box_office + international_box_office))),
+        popularity_discrete = as.factor(round(log2(popularity)))) %>% 
+  select(movie_name, production_budget, revenue, vote_average, popularity_discrete,
+  genre, release_date)
 
 
 # Create a graph:
-top10k_numbers_merged %>% 
+
+# color vector for revenue (hex codes used for 
+# ease of visualizing data)
+
+colors_revenue <- c("4"="red","5"="#FF4000","6"="#FF8000",
+"7"="#FFBF00","8"="#80FF00","9"="green")
+
+
+all_merged %>% 
   ggplot(data = .,
-  mapping = aes(x = vote_average,
-  y = production_budget,
+  mapping = aes(x = production_budget,
+  y = vote_average,
 color = revenue, 
-alpha = popularity)) +
-  geom_point(size = 3)
+alpha = popularity_discrete)) +
+  geom_point(size = 1, ylab = c(4, 10)) + 
+  scale_color_manual(values = colors_revenue)
 
-top10k_numbers_merged
 
 
+top10k_numbers_merged %>%
+  ggplot(data = .,
+  mapping = aes(x = release_date))
 # May come back to this for data cleaning. For now just try to make the 8 graphs first
 normalize <- function(a, b){
   
 }
+
+
+write_csv(x = top10k_numbers_merged,
+          file = "merged_data.csv")
 
 
 
