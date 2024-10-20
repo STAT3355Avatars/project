@@ -1,7 +1,8 @@
 
 # To merge datasets:
 
-# ------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+
 # Dataset has been transforemd using log-transformation. Log-transformation 
 # compress data, especially extreme values. It scales them down to make the data more manageable and less skewed.
 
@@ -9,7 +10,10 @@
 
 # 1: Perform Descriptive Statistics: Get a description and insight from our data
 
-# 2: Visualize Descriptive Statistics : Visualize the described data
+# 2: Visualize Descriptive Statistics : Visualize the described data:
+        # Suggestion: To check trends over a period of time, look into Linecharts.
+        # For categorical data: Look at Piecharts, Bargraphs and Cummulative Frequency Charts
+
 
 # 3: Get a Good Sample and Normalize the data: Get the normal distribution 
 
@@ -19,9 +23,13 @@
 
 # 5: Find the Correlation and Regression between Multiple Variables:
         #  Suggestion: Look into Scatterplots, Heatmap, Corrplots 
+       
 
 
-# ---------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------
+
 # 1. Perform Descriptive Statistics: 
 # (a) The Center of the data : Mean, Median, Mode (We don't need Mode just in case)?
   # example: What is the [insert tool e.g "mean"] of the [insert numerical      
@@ -34,7 +42,8 @@
         # Variance, Coefficient of Variation? What do they tell us?
 
 # (c) Find the Measures of Spread/Dispersion: How?
-    # Suggestion: Look into Box-Plots, Violin Plots, Histogram
+    # Suggestion: Look into Box-Plots, Violin Plots, Histograms,
+                # Cummulative Frequency curves (for categorical data) / Maybe barcharts, grouped bar charts and stacked barcharts?
 
 
 # (d) What is the Shape of the data? Define the Skewness of the data. How?
