@@ -19,12 +19,13 @@
 
 # 4: Perform Inferential Statistics: Deal with Uncertainty and Test the Sample.
         # Suggestion: Look into Hypothesis Testing, One-Sample t-test, Two Sample  
-        #              tests,  Tests for Proportions
+        #    tests,  Tests for Proportions: Which is the best for our purpose(s)?
 
 # 5: Find the Correlation and Regression between Multiple Variables:
         #  Suggestion: Look into Scatterplots, Heatmap, Corrplots 
        
 
+# 6: Look into Lag Analysis/Time Series Analysis:
 
 
 
