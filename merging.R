@@ -3,17 +3,19 @@
 
 # ---------------------------------------------------------------------------
 
-# Dataset has been transforemd using log-transformation. Log-transformation 
-# compress data, especially extreme values. It scales them down to make the data more manageable and less skewed.
-
 # Next Steps:
 
+# Dataset has been transforemd using log-transformation. Log-transformation
+# compress data, especially extreme values. It scales them down to make the data more manageable and less skewed.
+
 # 1: Perform Descriptive Statistics: Get a description and insight from our data
+        # Suggestion: Use original (merged and untransformed - no log transformation) dataset and log-transformed dataset for descriptive statistics: we can compare the insights on both and compare.
+#  Descriptive stats on the original data give a baseline, while stats on the log-transformed data offer insights on how transformations affect the data.
+
 
 # 2: Visualize Descriptive Statistics : Visualize the described data:
         # Suggestion: To check trends over a period of time, look into Linecharts.
         # For categorical data: Look at Piecharts, Bargraphs and Cummulative Frequency Charts
-
 
 # 3: Get a Good Sample and Normalize the data: Get the normal distribution 
 
