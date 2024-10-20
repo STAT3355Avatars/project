@@ -32,7 +32,7 @@
 # --------------------------------------------------------------------------
 
 # 1. Perform Descriptive Statistics: 
-# (a) The Center of the data : Mean, Median, Mode (We don't need Mode just in case)?
+# (a) The Center of the data : Mean, Median, Mode (We don't need Mode per se)?
   # example: What is the [insert tool e.g "mean"] of the [insert numerical      
               # variable e.g "revenue"]:
   # General Question: for all movies in all years? for all movies in each year?
