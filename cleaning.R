@@ -104,6 +104,9 @@ top10k_numbers_merged <- inner_join(filtered_top_10k, filtered_the_numbers, by="
 
 all_merged <- inner_join(filtered_netflix_shows, top10k_numbers_merged)
 
+all_merged$rev = all_merged[, "domestic_box_office"] + all_merged[, "international_box_office"]
+
+all_merged[, c("rev", "release_date")]
 all_merged <- all_merged %>% 
   mutate(revenue = as.factor(round(log10(domestic_box_office + international_box_office))),
         popularity_discrete = as.factor(round(log2(popularity)))) %>% 

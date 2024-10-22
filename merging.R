@@ -191,7 +191,7 @@ data %>%
 
 
 # Barplot: Barplot of Budget for Each Genre
-data %>%
+barplot_sample  <- data %>%
   ggplot(
     data = .,
     mapping = aes(
@@ -202,6 +202,7 @@ data %>%
   geom_histogram(color = "black") +
   ggtitle(" Barplot of Budget for Each Genre")
 
+print(barplot_sample)
 
 # Tuesday: Split the years into intervals (every five years maybe),
 # and look at the trend for each genre in every interval.
