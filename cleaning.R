@@ -104,16 +104,6 @@ top10k_numbers_merged <- inner_join(filtered_top_10k, filtered_the_numbers, by="
 
 all_merged <- inner_join(filtered_netflix_shows, top10k_numbers_merged)
 
-all_merged$rev = all_merged[, "domestic_box_office"] + all_merged[, "international_box_office"]
-
-all_merged[, c("rev", "release_date")]
-all_merged <- all_merged %>% 
-  mutate(revenue = as.factor(round(log10(domestic_box_office + international_box_office))),
-        popularity_discrete = as.factor(round(log2(popularity)))) %>% 
-  select(movie_name, production_budget, revenue, vote_average, popularity_discrete,
-  genre, release_date)
-
-
 # Create a graph:
 
 # color vector for revenue (hex codes used for 
@@ -123,27 +113,12 @@ colors_revenue <- c("4"="red","5"="#FF4000","6"="#FF8000",
 "7"="#FFBF00","8"="#80FF00","9"="green")
 
 
-all_merged %>% 
-  ggplot(data = .,
-  mapping = aes(x = production_budget,
-  y = vote_average,
-color = revenue, 
-alpha = popularity_discrete)) +
-  geom_point(size = 1, ylab = c(4, 10)) + 
-  scale_color_manual(values = colors_revenue)
-
-
-
 top10k_numbers_merged %>%
   ggplot(data = .,
   mapping = aes(x = release_date))
-# May come back to this for data cleaning. For now just try to make the 8 graphs first
-normalize <- function(a, b){
-  
-}
 
 
-write_csv(x = top10k_numbers_merged,
+write_csv(x = all_merged,
           file = "merged_data.csv")
 
 
