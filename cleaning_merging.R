@@ -245,8 +245,9 @@ colnames(final_df)
 
 # Export final_df as .csv file
 write_csv(
-  x = all_merged,
+  x = final_df,
   file = "merged_data.csv")
+
 
 
 
