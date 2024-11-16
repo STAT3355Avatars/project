@@ -60,6 +60,8 @@ data %>%
 
 colnames(data)
 
+data <- data %>% 
+  mutate(revenue = domestic_box_office + international_box_office)
 
 data %>% 
         ggplot(data = .,
@@ -151,6 +153,9 @@ data %>%
   ) +
   geom_line() +
   ggtitle("Trend of Revenues over the Years")
+
+
+
 
 # Line Chart 2: Trend of Revenues over the Years for Each Genre
 data %>%
