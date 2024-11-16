@@ -2,7 +2,7 @@
 library(readr)
 library(dplyr)
 library(ggplot2)
-
+library(lubridate)
 # --------------------------------------------------------------------------------------
 #### Observe Dataset:
 
@@ -15,12 +15,12 @@ netflix_shows <- read_csv("netflix_shows_set.csv",
                             # parse the columns to specific types : makes data cleaning easier
                             "show_id" = col_factor(),
                             "type" = col_factor(),
-                            "title" = col_factor(),
+                            "title" = col_character(),
                             "director" = col_character(),
                             "cast" = col_character(),
                             "country" = col_factor(),
                             "date_added" = col_date(format = "%B %d, %Y"),
-                          "release_year" = col_factor(),
+                          "release_year" = col_double(),
                           "rating" = col_factor(),
                           "duration" = col_factor(),
                           "listed_in" = col_factor(),
@@ -32,8 +32,8 @@ netflix_shows <- read_csv("netflix_shows_set.csv",
 
 the_numbers <- read_csv("theNumbers_set.csv",
                         col_types = cols(
-                          movie_name = col_factor(),
-                          production_year = col_factor(),
+                          movie_name = col_character(),
+                          production_year = col_double(),
                           movie_odid = col_factor(),
                           production_budget = col_double(),
                           domestic_box_office = col_double(),
@@ -55,15 +55,15 @@ top_10k <- read_csv("top_10k_set.csv",
                     col_types = cols(
                       id = col_double(),
                       original_language = col_factor(),
-                      original_title = col_factor(),
+                      original_title = col_character(),
                       popularity = col_double(),
                       release_date = col_date(format = "%Y-%m-%d"),
                       vote_average = col_double(),
-                      vote_count = col_factor(),
+                      vote_count = col_double(),
                       genre = col_factor(),
                       overview = col_character(),
                       revenue = col_double(),
-                      runtime = col_factor(),
+                      runtime = col_double(),
                       tagline = col_factor()
                     ),
                     skip_empty_rows = TRUE,
@@ -75,9 +75,9 @@ top_10k <- read_csv("top_10k_set.csv",
 
 # ----------------------------------- Selecting netflix_shows columns
 colnames(netflix_shows)
-# columns to select: type, title, directior, cast, country, listed_in
+# columns to select: type, title, directior, cast, country, listed_in, release_year
 netflix_shows <- netflix_shows %>% 
-  select(type, title, director, cast, country, listed_in)
+  select(type, title, director, cast, country, listed_in, release_year)
 
 # ----------------------------------- Selecting top-10k columns
 colnames(top_10k)
@@ -88,137 +88,168 @@ top_10k <- top_10k %>%
 
 # ----------------------------------- Selecting the_numbers columns
 colnames(the_numbers)
-# columns to select: movie_name production_budget, domestic_box_office, international_box_office, rating, genre
+# columns to select: movie_name production_budget, domestic_box_office, international_box_office, rating, genre,  creative_type, production_year
 the_numbers <- the_numbers %>% 
   select(movie_name, production_budget, 
     domestic_box_office, international_box_office, 
     rating, genre,
-  creative_type)
-
-# checking for duplicates
-the_numbers %>% 
-  distinct(movie_name, .keep_all = TRUE)
-
-top_10k %>%
-  distinct(movie_name, .keep_all = TRUE)
-
-netflix_shows %>%
-  distinct(movie_name, .keep_all = TRUE)
+  creative_type, production_year)
 
 
-
-# Identify duplicates in the dataset
-duplicated_rows <- the_numbers %>%
-  group_by(movie_name) %>%
-  filter(n() > 1) %>%
-  ungroup()
-
-# View the duplicated rows
-print(duplicated_rows)
-
-# ---------------------------------------Merge the datasets based on movie_name
+# ----------------------------Check for duplicates BEFORE Merging:
 # Renaming original_title in top_10k and title in netflix_shows to movie_name
 top_10k <- rename(top_10k, "movie_name" = "original_title")
 netflix_shows <- rename(netflix_shows, "movie_name" = "title")
 
+# Identify duplicates in the_numbers dataset
+duplicated_the_numbers <- the_numbers %>%
+  group_by(movie_name, production_year) %>%
+  filter(n() > 1) %>%
+  ungroup()
+# View the duplicated rows
+print(duplicated_the_numbers)
+
+
+# Identify duplicates and summarize the dataset: One duplicate found in the top_10k dataset!
+duplicated_top10k <- top_10k %>%
+  group_by(movie_name, release_date) %>%
+  filter(n() > 1) %>%
+  summarise(
+    vote_average = mean(vote_average, na.rm = TRUE),
+    vote_count = sum(vote_count, na.rm = TRUE),
+    runtime = unique(runtime)[1], # Assuming runtime should be unique and consistent across duplicates
+    .groups = "drop"
+  )
+duplicated_top10k <- as.data.frame(duplicated_top10k)
+
+# Get rid of the row filled with NA columns
+duplicated_top10k <- duplicated_top10k[complete.cases(duplicated_top10k), ]
+
+# Filter rows in top_10k where movie_name matches any movie_name in duplicated_top10k
+top_10k[which(top_10k$movie_name %in% duplicated_top10k$movie_name), ] <-
+  duplicated_top10k
+
+number_of_duplicates <- top_10k %>%
+  group_by(movie_name, release_date) %>%
+  filter(n() > 1)  %>% 
+  ungroup() %>% 
+  count()
+
+distinct_top10k <- top_10k %>% 
+  group_by(release_date) %>% 
+  distinct(movie_name, .keep_all = TRUE) %>% 
+  ungroup() 
+
+# distinct_top10k[!complete.cases(distinct_top10k), ]
+
+# # Assuming 'distinct_top10k' is your dataset
+# cleaned_distinct_top10k <- distinct_top10k[apply(distinct_top10k,
+#    1, function(row) !all(is.na(row))), ]
+
+# View the distinct dataset
+cleaned_distinct_top10k <- distinct_top10k
+print(cleaned_distinct_top10k)
+
+# set top_10k to the distinct top_10k
+top_10k <- cleaned_distinct_top10k
+
+
+
+# Checking duplicates for netflix shows
+duplicated_netflix <- netflix_shows %>%
+  group_by(movie_name, release_year) %>%
+  filter(n() > 1) %>%
+  ungroup() # No duplicates found for netflix shows
+
+# View the duplicated rows
+print(duplicated_netflix)
+
+
+
+
+# ---------------------------------------Merge the datasets based on movie_name
 # Merging the datasets that share the same movie_name 
-all_merged1 <- the_numbers[casefold(the_numbers$movie_name) %in% casefold(top_10k$movie_name) &
-                          casefold(the_numbers$movie_name) %in% casefold(netflix_shows$movie_name), ]
-
-# If many-to-many relationship is expected
-all_merged_with_top10k <- all_merged1 %>%
-  left_join(top_10k, by = "movie_name")
-
-all_merged_with_top10k <- all_merged_with_top10k%>% 
-  left_join(netflix_shows, by = "movie_name")
-
-all_merged_with_top10k %>% 
-  distinct(movie_name, .keep_all = TRUE)
-
-
-
-filtered_the_numbers <- the_numbers %>% 
-  filter(movie_name %in% top_10k$movie_name &
-        movie_name %in% netflix_shows$movie_name)
-
-filtered_top_10k <- top_10k %>% 
-  filter(movie_name %in% the_numbers$movie_name & 
-        movie_name %in% netflix_shows$movie_name)
-
-filtered_netflix_shows <- netflix_shows %>%
-  filter(movie_name %in% top_10k$movie_name &
-        movie_name %in% the_numbers$movie_name)
-
-top10k_numbers_merged <- inner_join(filtered_top_10k, filtered_the_numbers, by="movie_name")
-
-all_merged <- inner_join(filtered_netflix_shows, top10k_numbers_merged)
-
-all_merged %>% 
-  distinct(movie_name, .keep_all = TRUE)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Create a graph:
-
-# color vector for revenue (hex codes used for 
-# ease of visualizing data)
-
-colors_revenue <- c("4"="red","5"="#FF4000","6"="#FF8000",
-"7"="#FFBF00","8"="#80FF00","9"="green")
-
-
-top10k_numbers_merged %>%
-  ggplot(data = .,
-  mapping = aes(x = release_date))
-
-
-write_csv(x = all_merged,
-          file = "merged_data.csv")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# all_merged1 <- the_numbers[casefold(the_numbers$movie_name) %in% casefold(top_10k$movie_name) &
+#                           casefold(the_numbers$movie_name) %in% casefold(netflix_shows$movie_name), ]
+# Extract the release year from the release_date column 
+top_10k <- 
+  top_10k %>% mutate(production_year = year(release_date))
+
+the_numbers[the_numbers$movie_name == "Death at a Funeral", ]
+top_10k[top_10k$movie_name == "Death at a Funeral", ]
+
+# Merging top10k dataset and the_numbers by movie_name and production_year
+all_merged_with_top10k <- top_10k %>%
+  inner_join(the_numbers, by = c("movie_name", "production_year"))
+
+# Identify duplicates in all_merged: # No duplicated Names because the production year are different
+duplicated_merged <- all_merged_with_top10k %>%
+  group_by(movie_name) %>%
+  filter(n() > 1)
+all_merged_with_top10k_df <- as.data.frame(all_merged_with_top10k) 
+all_merged_with_top10k_df %>%
+  group_by(movie_name, production_year) %>% 
+  filter(n() > 1) %>% 
+  select(movie_name, release_date, vote_average, vote_count, production_year)
+
+as.data.frame(all_merged_with_top10k) %>% 
+  head()
+
+netflix_shows <- netflix_shows %>% 
+  mutate(production_year = release_year)
+
+all_merged_with_top10k <- all_merged_with_top10k %>%
+  inner_join(netflix_shows, by = c("movie_name", "production_year"))
+
+all_merged_with_top10k_df <- as.data.frame(all_merged_with_top10k)
+
+# There are no re-curring movies so, no repeated rows
+all_merged_with_top10k_df %>%
+  group_by(movie_name, production_year) %>%
+  filter(n() > 1) %>% 
+  ungroup()
+
+# Now, there is no point in summarising duplicates because there are no duplicates
+summarised_duplicates <- all_merged_with_top10k_df %>%
+  group_by(movie_name, production_year) %>%
+  filter(n() > 1) %>%
+  summarise(
+    release_date = first(release_date),
+    vote_average = round(mean(vote_average, na.rm = TRUE), 1),
+    vote_count = sum(vote_count, na.rm = TRUE),
+    runtime = max(runtime, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Get unique rows (including those without duplicates)
+unique_rows <- all_merged_with_top10k_df %>%
+  group_by(movie_name, production_year) %>%
+  filter(n() == 1) %>%
+  ungroup()
+
+# There was no need to combine summarised_duplicates and unique rows. Check that number of unique rows are equal to number or all_merged_with_top10k_df
+nrow(all_merged_with_top10k_df) == nrow(unique_rows)  # must be TRUE
+
+# Get the final dataframe
+final_df <- all_merged_with_top10k_df
+
+
+# Assuming 'final_df' is your dataframe
+na_rows <- as_tibble(final_df[!complete.cases(final_df), ])
+# View the rows with NA values
+print(na_rows) # Surprisingly, there are no rows with NA values after merging. YAY!!!
+
+
+colnames(final_df)
+# There should be 18 columns in the final dataframe:
+
+# Export final_df as .csv file
+write_csv(
+  x = all_merged,
+  file = "merged_data.csv")
+
+
+
+# The cleaned and extracted codes are above the dashed line
+# --------------------------------------------------------------------------------------------------
+# HI! I want to delete the rest from here to the buttom. 
