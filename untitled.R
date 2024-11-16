@@ -8,7 +8,7 @@ data <- read_csv("merged_data.csv")
 data$profit <- data$domestic_box_office + 
   data$international_box_office - data$production_budget
 
-ninetieth <- quantile(data$profit, 0.9)
+ninetieth <- quantile(data$profit, 0.85)
 
 successful_films <- data[data$profit >= ninetieth, ]
 

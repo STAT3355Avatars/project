@@ -243,6 +243,20 @@ print(na_rows) # Surprisingly, there are no rows with NA values after merging. Y
 colnames(final_df)
 # There should be 18 columns in the final dataframe:
 
+
+sum(final_df$genre == "Comedy")
+sum(final_df$genre == "Black Comedy")
+sum(final_df$genre == "Romantic Comedy")
+
+# Converting "Black Comedy" and "Romantic Comedy" -> "Comedy"
+map_genres <- c("Comedy" = "Comedy", "Black Comedy" = "Comedy", "Romantic Comedy" = "Comedy",
+                "Thriller/Suspense" = "Thriller/Suspense", "Western" = "Western", "Drama" = "Drama",
+                "Adventure" = "Adventure", "Action" = "Action", "Horror" = "Horror", "Musical" = "Musical")
+
+final_df$genre <- as.factor(map_genres[as.character(final_df$genre)])
+  
+# Conversion done!
+
 # Export final_df as .csv file
 write_csv(
   x = final_df,

@@ -63,9 +63,10 @@ ggplot(data = data_long, mapping = aes(x = genre, y = value, fill = variable)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(
     title = "Total Production Budget and Profit by Genre",
-    y = "Amount", x = "Genre"
+    y = "Amount ($)", x = "Genre"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
 
 # ---------------------------------Scatterplots
 # Scatter Plot of Production_Budget and Profit
