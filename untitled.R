@@ -28,4 +28,6 @@ ggplot(data = unsuccessful_films, aes(x = genre)) +
   geom_bar() + 
   labs(title = "The number of other films in each genre!")
 
+sum(data$genre == "Action")
+sum(data$genre == "Adventure")
 
